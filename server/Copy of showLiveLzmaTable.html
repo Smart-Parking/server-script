@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>show all web info </title>
+
+<link rel="stylesheet" href="libs/bootstrap/css/bootstrap.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="libs/tablesorter/themes/blue/style.css" type="text/css" id=""/>
+<link rel="stylesheet" href="libs/tablesorter/addons/pager/jquery.tablesorter.pager.css" type="text/css" id=""/>
+
+
+<script language="javascript" type="text/javascript" src="libs/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="libs/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="libs/tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+<style>
+.white_content {
+ display: none;
+ position: absolute;
+ top: 25%;
+ left: 25%;
+ width: 50%;
+ padding: 6px 16px;
+ border: 12px solid #D6E9F1;
+ background-color: white;
+ z-index:1002;
+ overflow: auto;
+}
+.black_overlay {
+ display: none;
+ position: absolute;
+ top: 0%;
+ left: 0%;
+ width: 100%;
+ height: 100%;
+ background-color:#f5f5f5;
+ z-index:1001;
+ -moz-opacity: 0.8;
+ opacity:.80;
+ filter: alpha(opacity=80);
+}
+</style>
+
+<script type="text/javascript">
+function edititem(val1,val2,val3,val4,val5,val6)
+{	
+	 var light=document.getElementById('light2');
+	 var fade=document.getElementById('fade');
+	 light.style.display='block';
+	 fade.style.display='block';
+
+	 document.getElementById('type').value = val1 ;
+	 document.getElementById('name').value = val2 ;
+	 document.getElementById('image').value = val3 ;
+	 document.getElementById('style').value = val4 ;
+	 document.getElementById('attri').value = val5 ;
+	 document.getElementById('http').value = val6 ;
+}
+function able(var1)
+{
+	change_value(var1,1);
+}
+function disable(var1)
+{	
+	change_value(var1,0);
+}
+function change_value(var1, var2)
+{
+	   $.ajax({                                        		                
+		url:'./API/ableWebinfo.php?dptype='+var1+'&able='+var2,    	
+		dataType:'json',							               
+	    type:'get',	
+		data:{name:"yi"},
+		success:function(data){
+			if(data.report=="fail")
+			{
+				if(data.errmsg)
+					alert(data.errmsg);		
+				return;
+			}
+
+			$.ajax({                                        
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page=1',			
+				dataType:'json',								
+				type:'post',						
+				data:{name:"shen"},					
+				success:function(data){
+			
+				if(data.report=="ok")				
+				{
+					totalPage=data.totalpage;
+					currPage=1;
+
+					$("#firstBtn").hide();
+					$("#prevBtn").hide();
+
+					if(currPage<totalPage)
+						$("#nextBtn").show();
+
+					$("#totalBtn").text(currPage+"/"+totalPage);
+					$("select").get(0).options[currPage-1].selected=true;
+
+					var htmlstr = 	table_header ;	
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";
+					
+					$("#divTip").html(htmlstr);				
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+					$("#idSe").get(0).selectedIndex=0;
+
+				  }	
+				}
+			})
+			
+		}
+	   })
+}
+function reflash()
+{
+ location.reload(1) ;
+}
+</script>
+
+<script type="text/javascript">
+var currPage=1;
+var pageSize=50;
+var totalPage;
+var index = 0 ;
+
+var table_header 	="<table id=\"application_list\" class=\"tablesorter table table-striped table-bordered table-condensed\">";
+					table_header+="<thead><tr>";
+					table_header+="<th width=\"90\">index</th>";
+					table_header+="<th width=\"40\" class=\"header\">dptype</th>";
+					table_header+="<th class=\"header\">name</th>";
+					table_header+="<th class=\"header\">logo</th>";
+					table_header+="<th class=\"header\">style</th>";
+					table_header+="<th class=\"header\">attr</th>";
+					table_header+="<th class=\"header\">able</th>";
+					table_header+="<th class=\"header\">http</th>";
+					table_header+="<th class=\"header\">update_time</th>";
+					table_header+="<th> Action </th>";
+					table_header+="</tr></thead>";
+					table_header+="<tbody>";	
+					
+	$(document).ready(function() { 
+
+		$("#firstBtn").hide();
+		$("#prevBtn").hide();
+
+		$("#nextBtn").click(function(){
+
+			if(currPage<totalPage)
+			{
+			currPage++;
+
+			$("#firstBtn").show();
+			$("#prevBtn").show();
+			
+			if(currPage==totalPage)
+				$("#nextBtn").hide();
+				
+
+			$("#totalBtn").text(currPage+"/"+totalPage);
+			$("select").get(0).options[currPage-1].selected=true;				
+
+            $.ajax({                                        
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page='+currPage,
+				dataType:'json',	
+				type:'post',
+				success:function(data){
+
+				if(data.report=="ok")
+				  {
+					var htmlstr = 	table_header ;		
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							
+							htmlstr+="</td></tr>";
+						})			
+					htmlstr+="</tbody></table>";
+	
+					$("#loading").hide();
+					$("#divTip").show();
+					$("#divTip").html(htmlstr);		
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+
+				  }	
+			    }
+			})
+		  }
+		})
+
+		$("#prevBtn").click(function(){
+
+			if(currPage>1)
+			{	
+			currPage-=1;
+
+			if(currPage==1)
+		        {
+				$("#prevBtn").hide();
+				$("#firstBtn").hide();
+				}
+
+			$("#nextBtn").show();
+			
+			$("#totalBtn").text(currPage+"/"+totalPage);
+			$("select").get(0).options[currPage-1].selected=true;
+
+             $.ajax({                                        
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page='+currPage,
+				dataType:'json',	
+				type:'post',
+				success:function(data){
+
+				if(data.report=="ok")
+				{
+					var htmlstr = 	table_header ;		
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";
+	
+					$("#loading").hide();
+					$("#divTip").show();
+					$("#divTip").html(htmlstr);		
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+				}
+				  }	
+			})
+		    }
+		})
+
+
+		$("#firstBtn").click(function(){
+
+			currPage=1;
+
+			$("#firstBtn").hide();
+			$("#prevBtn").hide();
+			$("#nextBtn").show();
+
+			$("#totalBtn").text(currPage+"/"+totalPage);
+			$("select").get(0).options[currPage-1].selected=true;
+			
+	        $.ajax({                                        
+
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page=1',
+				dataType:'json',	
+				type:'post',
+				success:function(data){
+
+				if(data.report=="ok")
+				  {
+					var htmlstr = 	table_header ;		
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";
+	
+					$("#loading").hide();
+					$("#divTip").show();
+					$("#divTip").html(htmlstr);		
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+
+				  }	
+			    }
+			})
+		})
+
+
+		$("#idSel").change(function(){
+
+			if(currPage!=$(this).val())
+			{
+				currPage=$(this).val();
+
+				$("#totalBtn").text(currPage+"/"+totalPage);
+				
+				if(currPage==1)
+				{
+					$("#firstBtn").hide();
+					$("#prevBtn").hide();
+				  //$("#nextBtn").show();
+				}
+				else
+				{
+					$("#firstBtn").show();
+					$("#prevBtn").show();				
+				}
+				
+				if(currPage<totalPage)
+				{
+					$("#nextBtn").show();				
+				}
+				else
+				{
+					$("#nextBtn").hide();
+				}
+				
+				
+				$.ajax({                                        
+					url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page='+currPage,
+					dataType:'json',	
+					type:'post',
+					success:function(data){
+
+						if(data.report=="ok")
+				  {
+					var htmlstr = 	table_header ;		
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";
+	
+					$("#loading").hide();
+					$("#divTip").show();
+
+					$("#divTip").html(htmlstr);		
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+				  }	
+					}
+
+				})				
+			}				
+					
+		});
+
+
+
+			$.ajax({				        
+
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page=1',
+				dataType:'json',
+				type:'post',
+				data:{name:"shen"},
+				success:function(data){
+				
+				  if(data.report=="ok")
+				  {
+					totalPage=data.totalpage;
+					if(totalPage==1)
+						$("#nextBtn").hide();
+					
+					$("#totalBtn").text(1+"/"+totalPage);
+					
+					var selStr="";
+					for(var i=1;i<=totalPage;i++)
+					{
+						if(currPage==i)  
+							selStr+="<option value=\""+i+"\" selected=\"selected\">"+i+"</option>";
+						else
+							selStr+="<option value=\""+i+"\">"+i+"</option>";					    
+					}	
+					$("#idSel").html(selStr);
+					
+					var htmlstr = 	table_header ;	
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";					
+	
+					$("#loading").hide();
+					$("#divTip").show();
+//					$("#pager").show();
+
+					$("#divTip").html(htmlstr);		
+
+//					$("table").tablesorter({widthFixed: true, widgets: ['zebra']}).tablesorterPager({container: $("#pager")});
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+
+				  }	
+				}
+			}) 
+		})
+
+function del(val,var2)
+{
+	   $.ajax({                                        		                
+		url:'./API/removelWebinfo.php?dptype='+val,    	
+		dataType:'json',							               
+	    type:'get',	
+		data:{name:"yi"},
+		success:function(data){
+			if(data.report=="fail")
+			{
+				if(data.errmsg)
+					alert(data.errmsg);		
+				return;
+			}
+
+			$.ajax({                                        
+				url:'./API/getAllWebinfo.php?pageSize='+pageSize+'&page=1',			
+				dataType:'json',								
+				type:'post',						
+				data:{name:"shen"},					
+				success:function(data){
+			
+				if(data.report=="ok")				
+				{
+					totalPage=data.totalpage;
+					currPage=1;
+
+					$("#firstBtn").hide();
+					$("#prevBtn").hide();
+
+					if(currPage<totalPage)
+						$("#nextBtn").show();
+
+					$("#totalBtn").text(currPage+"/"+totalPage);
+					$("select").get(0).options[currPage-1].selected=true;
+
+					var htmlstr = 	table_header ;	
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1)+"</td>";
+							htmlstr+="<td>"+user["dptype"]+"</td>";
+							htmlstr+="<td>"+user["name"]+"</td>";
+							htmlstr+="<td>"+user["logo"]+"</td>";
+							htmlstr+="<td>"+user["style"]+"</td>";
+							htmlstr+="<td>"+user["attr"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["http"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="<td width='200'>";
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"del("+user["dptype"]+",0)\"  id=\"delBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>del</a>";
+							
+							htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"edititem("+user["dptype"]+",'"+user["name"]+"','"+user["logo"]+"',"+user["style"]+","+user["attr"]+","+user["http"]
+								+")\"  id=\"editBtn\" style=\"color: white;\">";
+							htmlstr+="<i class=\"icon-edit icon-white\"></i>edit</a>";	
+							
+							if(1==user["able"])
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"disable("+user["dptype"]+")\"  id=\"ubable\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>disable</a>";	
+							}
+							else
+							{
+								htmlstr+="<a class=\"btn btn-primary \" href='#' onclick=\"able("+user["dptype"]+")\"  id=\"able\" style=\"color: white;\">";
+								htmlstr+="<i class=\"icon-edit icon-white\"></i>able</a>";	
+							}
+							htmlstr+="</td></tr>";
+						})		
+					htmlstr+="</tbody></table>";
+					
+					$("#divTip").html(htmlstr);				
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+					$("#idSe").get(0).selectedIndex=0;
+
+				  }	
+				}
+			})
+			
+		}
+	   })
+}
+
+</script>
+<script type="text/javascript">
+	$(document).ready(function() { 
+	
+	 $("#idAddBtn").click(function(){
+
+		 	if($("#type").val()=="")
+			{
+				alert("dp type should be filled!");
+				return;			
+			}
+			if($("#image").val()=="")
+			{
+				alert("image should be filled!");
+				return;			
+			}
+			if($("#style").val()=="")
+			{
+				alert("style  should be filled!");
+				return;			
+			}
+			if($("#attri").val()=="")
+			{
+				alert("attri should be filled!");
+				return;			
+			}	
+			if($("#http").val()=="")
+			{
+				alert("http should be filled!");
+				return;			
+			}
+			$.post("./API/updateWebsiteinfo.php",
+					{ 
+					  type:($("#type").val()),
+					  name:($("#name").val()),
+					  image:($("#image").val()),
+					  style:($("#style").val()),
+					  attri:($("#attri").val()),
+					  http:($("#http").val()),
+					},
+
+					function(data){
+					   var ret=eval("("+data+")");
+			
+					   if(ret.report=="ok")  
+					   {
+						$("#tip").html("<font color='green'>update ok</font>");
+						//reflash();
+				   	   }
+					   else
+					   {
+					  	$("#").html("<font color='red'> update fail !!</font>"); 
+					   }
+					   window.location.href="showAllWebinfo.html";
+					})
+			 });
+});
+</script>
+
+
+</head>
+
+<body>
+<div style="display: block;" id="loading">
+</div>
+
+<section style="height: 832px; display: block;" id="main" class="column">
+<article class="module width_full">
+<div style="width:97%;margin:0 auto;">
+
+<a class="btn btn-primary" data-model="application" href="#" style="color: white;">
+All webinfo 
+</a>
+
+<form action="#" method="post" id="application_list_form">
+
+<ul class="pager">
+	<li class="previous" id="firstBtn"><a href="#" style="margin-right:10px;"> <--First</a></li>
+	<li class="previous" id="prevBtn"><a href="#" style="margin-right:10px;"> <--Prev</a></li>
+	<li class="next" id="nextBtn"><a href="#" style="margin-right:10px;">Next--> </a></li>
+	<li class="next" id="totalBtn"></li>
+	<li class="next" id="selBtn">
+		<select id="idSel"  valign="right"></select>
+	</li>
+</ul>
+
+
+<div id="divTip" style="display: none;"></div>
+<div id="pager"  style="display: none;" class="pager">  
+<br><br>
+<button class="first btn btn-success">first</button> 
+<button class="prev  btn btn-success ">prev</button>  
+<input class="pagedisplay"  type="text">
+<button class="next btn btn-success">next</button>  
+<button class="last btn btn-success">last</button>  
+
+<select id="idSe" class="pagesize" valign="center">
+<option value="10" selected="selected">10</option>
+<option value="3">3</option>
+<option value="30">30</option>
+<option value="40">40</option>
+</select>
+</div> 
+
+
+</form>
+</div>
+</article>
+</section>
+
+<div id="light2" class="white_content">
+      <div class="close">
+		<a href="javascript:void(0)"  onclick="reflash()"> close</a>
+	  </div>
+
+	<form action="#" method="post" class="well" id="vod_bill_add_form">
+		<div class="control-group">
+			<label>dp type</label>
+			<input id="type" name="type" class="span3" placeholder="Enter type" value="" type="text">
+		</div>
+		<div class="control-group">
+			<label>dp name</label>
+			<input id="name" name="name" class="span3" placeholder="Enter name" type="text">
+		</div>
+		<div class="control-group">
+			<label>dp image</label>
+			<input id="image" name="image" class="span3" placeholder="Enter image" type="text">
+		</div>
+		<div class="control-group">
+			<label>dp style</label>
+			<input id="style" name="style" class="span3" placeholder="Enter style" type="text">
+		</div>
+		<div class="control-group">
+			<label>dp attri</label>
+			<input id="attri" name="attri" class="span3" placeholder="Enter attri" type="text">
+		</div>	
+		<div class="control-group">
+			<label>http</label>
+			<input id="http" name="http" class="span3" placeholder="is http" type="text">
+		</div>	
+		<p class="help-block" id="tip"></p>
+		<button type="button"  class="btn btn-primary add" id="idAddBtn">change</button>
+</form>
+
+</div>
+<div id="fade" class="black_overlay"></div>
+
+</body>
+</html>

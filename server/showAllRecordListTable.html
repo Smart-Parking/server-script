@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>show all web info </title>
+
+<link rel="stylesheet" href="libs/bootstrap/css/bootstrap.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="libs/tablesorter/themes/blue/style.css" type="text/css" id=""/>
+<link rel="stylesheet" href="libs/tablesorter/addons/pager/jquery.tablesorter.pager.css" type="text/css" id=""/>
+
+
+<script language="javascript" type="text/javascript" src="libs/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="libs/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="libs/tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+
+<script type="text/javascript">
+var currPage=1;
+var pageSize=100;
+var totalPage;
+var index = 0 ;
+
+var table_header 	="<table id=\"application_list\" class=\"tablesorter table table-striped table-bordered table-condensed\">";
+					table_header+="<thead><tr>";
+					table_header+="<th width=\"90\">index</th>";
+					table_header+="<th class=\"header\">chipid</th>";
+					table_header+="<th class=\"header\">type</th>";
+					table_header+="<th class=\"header\">status</th>";
+					table_header+="<th class=\"header\">live</th>";
+					table_header+="<th class=\"header\">able</th>";
+					table_header+="<th class=\"header\">update_time</th>";
+					table_header+="</tr></thead>";
+					table_header+="<tbody>";	
+
+var table_middle ="";					
+var table_tail ="</tbody></table>" ;
+
+
+function  ajax_func(currPage)
+{
+	$.ajax({				        
+				url:'./API/getRecordListTable.php?pageSize='+pageSize+'&pageoffset='+currPage,
+				dataType:'json',
+				type:'post',
+				data:{name:"yiyuan"},
+				success:function(data){
+				
+				  if(data.report=="ok")
+				  {
+					totalPage=data.totalpage;
+					
+					if(totalPage == currPage)
+					{
+						$("#LoadMore").hide();
+					}
+					var htmlstr;
+					$.each(data.users,function(index,user){
+							htmlstr += "<tr>";
+							htmlstr+="<td>"+(index+1+(currPage-1)*pageSize)+"</td>";
+							htmlstr+="<td>"+user["chipid"]+"</td>";
+							htmlstr+="<td>"+user["type"]+"</td>";
+							htmlstr+="<td>"+user["status"]+"</td>";
+							htmlstr+="<td>"+user["live"]+"</td>";
+							htmlstr+="<td>"+user["able"]+"</td>";
+							htmlstr+="<td>"+user["add_time"]+"</td>";
+							htmlstr+="</tr>";
+						})		
+					table_middle += htmlstr ;
+					$("#divTableM").html(table_header+table_middle+table_tail);	
+					$("table").tablesorter({widthFixed: true, widgets: ['zebra']});
+				  }	
+				}
+			})
+}
+
+
+					
+	$(document).ready(function() {
+		ajax_func(currPage);
+
+		$("#LoadMore").click(function(){
+				currPage += 1 ;
+				ajax_func(currPage);
+			})
+	})
+			
+</script>
+</head>
+
+<body>
+<section style="height: 832px; display: block;" id="main" class="column">
+<article class="module width_full">
+<div style="width:90%;margin:0 auto;">
+<form action="#" method="post" id="application_list_form">
+<div id="divTableM"></div>
+<button type="button" class="btn btn-primary add" id="LoadMore" style="text-align:center;vertical-align:middle">Load more</button>
+</form>
+</div>
+</article>
+</section>
+</body>
+</html>

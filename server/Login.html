@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录</title>
+
+<link rel="stylesheet" href="libs/bootstrap/css/bootstrap.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="libs/tablesorter/themes/blue/style.css" type="text/css" id=""/>
+<link rel="stylesheet" href="libs/tablesorter/addons/pager/jquery.tablesorter.pager.css" type="text/css" id=""/>
+
+<script language="javascript" type="text/javascript" src="libs/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="libs/tablesorter/jquery.tablesorter.js"></script>
+<script type="text/javascript" src="libs/tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() { 
+	
+	 $("#loginBut").click(function(){
+
+	      if($("#account").val()=="")
+	      {
+			  alert("account should be filled!");
+			  return;			
+	      }
+	      if($("#password").val()=="")
+	      {
+			  alert("password should be filled!");
+			  return;			
+	      }		 
+
+	 		if($("#autologin").attr('checked')==undefined)
+			  	var autoLogin=0;
+			else
+			 	var autoLogin=1;
+
+				$.post("./API/loginSystem.php",
+					{ 
+					  account:($("#account").val()),
+					  password:($("#password").val()),			  					  
+					},
+
+					function(data){
+					   var ret=eval("("+data+")");
+					   
+					   if(ret.report=="ok")  
+					   {
+					   	if(autoLogin)
+					   	{
+					   		alert("auto login true !");
+					   		////should loading static 
+					   	}
+						$("#tip").html("<font color='green'>add ok</font>");
+						 location.href ="db_index.html";	
+				   	   }
+					   else
+					   {
+						alert(ret.report);
+					  	$("#tip").html("<font color='red'>login fail !</font>"); 
+					   }
+					})
+			 });
+});
+</script>
+</head>
+
+<body>
+<header>
+	<h1>登录</h1>
+</header>
+		<div >
+			<form id='login-form'>
+				<div>
+					<label>账号</label>
+					<input id='account' type="text" placeholder="请输入账号">
+				</div>
+				<div>
+					<label>密码</label>
+					<input id='password' type="password" placeholder="请输入密码">
+				</div>
+			</form>
+			<form>
+				<input type="checkbox" id='autologin'>自动登录				
+			</form>
+			<div>
+				<button id='loginBut'>登录</button>
+			</div>
+		</div>
+		
+		<p class="help-block" id="tip"></p>
+
+</body>
+</html>
